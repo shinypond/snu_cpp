@@ -1,0 +1,12 @@
+Benefit:
+•	Running of multiple applications – It enable to run multiple applications at the same time.
+•	Better resource utilization – It enables that the resources that are unused by one application can be used for other applications.
+•	Better average response time – Without concurrency, each application has to be run to completion before the next one can be run.
+•	Better performance –It enables the better performance by the operating system. When one application uses only the processor and another application uses only the disk drive then the time to run both applications concurrently to completion will be shorter than the time to run each application consecutively.
+
+
+Drawbacks:
+•	It is required to protect multiple applications from one another.
+•	It is required to coordinate multiple applications through additional mechanisms.
+•	Additional performance overheads and complexities in operating systems are required for switching among applications.
+•	Sometimes running too many applications concurrently leads to severely degraded performance.

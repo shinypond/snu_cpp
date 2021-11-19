@@ -3,8 +3,8 @@
 #include <pthread.h>
 #include <time.h>
 #include <cmath>
-#define N 10000LL
-#define NUM_THREADS 12
+#define N 100LL
+#define NUM_THREADS 2
 
 using namespace std;
 
@@ -36,8 +36,10 @@ void erase_multiple(longlist *pl, int jumpsize) {
     // primelist의 첫 원소 0부터 시작하여,
     // jumpsize만큼 건너뛰며 해당 위치의 원소를 true -> false로 변경
     // 단, jumpsize 자체가 이미 합성수로 판명난 경우, 즉시 종료
-    long long i = 0;
-    for (long long i=0; i<=N; i+=jumpsize) {
+    if (pl->is_prime[jumpsize] == 0) {
+        return;
+    }
+    for (long long i=2*jumpsize; i<=N; i+=jumpsize) {
         pl->is_prime[i] = 0;
     }
 }
@@ -46,7 +48,7 @@ void erase_multiple(longlist *pl, int jumpsize) {
 long long final_count(longlist *pl) {
     // 모든 계산 완료 후, primelist의 is_prime 배열 중 1인 값을 전부 sum
     long long sum;
-    for (long long i; i<N; ++i) {
+    for (long long i=1; i<=N; ++i) {
         sum += pl->is_prime[i];
     }
     return sum;
@@ -55,7 +57,7 @@ long long final_count(longlist *pl) {
 
 void init_jumper(counter_t *c) {
     // jumper의 초기화 함수
-    c->value = 0; 
+    c->value = 1; 
     pthread_mutex_init(&c->lock, NULL);
 }
 
@@ -83,7 +85,8 @@ void *erase_composites(void *arg) {
     int sqrt_N = pow(N, 0.5);
     while (get_jumper(&jumper) <= sqrt_N) {
         int jumpsize = inc_jumper(&jumper);
-
+        cout << jumpsize << endl;
+        erase_multiple(&primelist, jumpsize);
     }
     return NULL;
 }
@@ -96,7 +99,7 @@ int main() {
     pthread_t p_threads[NUM_THREADS];
 
     // primelist, jumper 초기화
-    init_jumper(&jumper, 0);
+    init_jumper(&jumper);
     init_primelist(&primelist);
 
     // thread마다 task 할당

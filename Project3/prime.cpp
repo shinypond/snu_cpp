@@ -3,14 +3,14 @@
 #include <pthread.h>
 #include <time.h>
 #include <cmath>
-#define N 100LL
-#define NUM_THREADS 2
+#define N 4000000000LL
+#define NUM_THREADS 128
 
 using namespace std;
 
 
 typedef struct longlist {
-    bool is_prime[N+1]; // 0부터 시작 
+    bool *is_prime = (bool *) malloc(N+1); // 0부터 시작
 } longlist;
 
 
@@ -27,8 +27,9 @@ longlist primelist;
 void init_primelist(longlist *pl) {
     // primelist의 초기화 함수
     for (long long i=0; i<N; ++i) {
-        pl->is_prime[i] = 0;
+        pl->is_prime[i] = 1; // 1, 1, ..., 1 꼴의 리스트로 초기화
     }
+    pl->is_prime[1] = 0; // 1은 소수가 아님
 }
 
 
@@ -47,7 +48,7 @@ void erase_multiple(longlist *pl, int jumpsize) {
 
 long long final_count(longlist *pl) {
     // 모든 계산 완료 후, primelist의 is_prime 배열 중 1인 값을 전부 sum
-    long long sum;
+    long long sum = 0;
     for (long long i=1; i<=N; ++i) {
         sum += pl->is_prime[i];
     }
@@ -85,7 +86,6 @@ void *erase_composites(void *arg) {
     int sqrt_N = pow(N, 0.5);
     while (get_jumper(&jumper) <= sqrt_N) {
         int jumpsize = inc_jumper(&jumper);
-        cout << jumpsize << endl;
         erase_multiple(&primelist, jumpsize);
     }
     return NULL;
@@ -112,6 +112,7 @@ int main() {
 
     // 모든 thread들의 작업이 완료된 후, 최종 prime 개수 조회
     long long numberOfPrime = final_count(&primelist);
+    free(primelist.is_prime);
 
     cout << "소수의 개수: " << numberOfPrime << endl;
     time_t end_time = time(NULL);

@@ -1,51 +1,108 @@
-from bisect import bisect
-from math import floor
+from random import randint
+from math import sqrt, ceil, floor, log
+import time
+import sys
 
-def prime_sieve(n):
-    sieve = [True] * (n//2) 
-    for i in range(3, int(n ** 0.5) + 1, 2):
-        if sieve[i//2]:
-            sieve[(i*i)//2::i] = [False] * ((n-i*i-1) // (2*i) + 1)
-    return [2] + [2*i+1 for i in range(1, n//2) if sieve[i]]
+def sieveOfAtkin(end):
+    end += 1
+    lng = ((end/2)-1+end%2)
+    sieve = [False] * int(lng + 1)
 
-limit = 10 ** 5
-primes = prime_sieve(limit)
-phi_cache = {}
+    x_max, x2, xd = int(sqrt((end-1)/4.0)), 0, 4
+    for xd in range(4, 8*x_max + 2, 8):
+        x2 += xd
+        y_max = int(sqrt(end-x2))
+        n, n_diff = x2 + y_max**2, (y_max << 1) - 1
+        if n%2 == 0:
+            n -= n_diff
+            n_diff -= 2
+        for d in range((n_diff - 1) << 1, -1, -8):
+            m = n%12
+            if (m == 1 or m == 5):
+                    m = n >> 1
+                    sieve[m] = not sieve[m]
+            n -= d
+                
+    x_max, x2, xd = int(sqrt((end-1)/3.0)), 0, 3
+    for xd in range(3, 6*x_max + 2, 6):
+        x2 += xd
+        y_max = int(sqrt(end-x2))
+        n, n_diff = x2 + y_max**2, (y_max << 1) - 1
+        if n%2 == 0:
+            n -= n_diff
+            n_diff -= 2
+        for d in range((n_diff - 1) << 1, -1, -8):
+            if (n%12 == 7):
+                    m = n >> 1
+                    sieve[m] = not sieve[m]
+            n -= d
+                
+    x_max, y_min, x2, xd = int((2 + sqrt(4-8*(1-end)))/4), -1, 0, 3
+    for x in range(1, x_max + 1):
+        x2 += xd
+        xd += 6
+        if x2 >= end: y_min = (((int(ceil(sqrt(x2 - end))) - 1) << 1) - 2) << 1
+        n, n_diff = ((x**2 + x) << 1) - 1, (((x-1) << 1) - 2) << 1
+        for d in range(n_diff, y_min, -8):
+            if (n%12 == 11):
+                    m = n >> 1
+                    sieve[m] = not sieve[m]
+            n += d
 
-def phi(x, a):
-    if (x, a) in phi_cache: return phi_cache[(x, a)]
-    if a == 1:
-        return (x + 1) // 2
-    result = phi(x, a-1) - phi(x / primes[a-1], a-1)
-    phi_cache[(x, a)] = result
-    return int(result)
-
-pi_cache = {}
-
-def pi(x):
-    x = int(x)
-    if x in pi_cache: return pi_cache[x]
-    if x < limit:
-        result = bisect(primes, x)
-        pi_cache[x] = result
-        return result
-
-    a = pi(x ** (1./4))
-    b = pi(x ** (1./2))
-    c = pi(x ** (1./3))
-
-    result = phi(x, a) + (b + a - 2) * (b - a + 1) / 2
-
-    for i in range(int(a)+1, int(b)+1):
-        w = x / primes[i-1]
-        b_i = pi(w ** (1./2))
-        result = result - pi(w)
-        if i <= c:
-            for j in range(i, b_i+1):
-                result = result - pi(w / primes[j-1]) + j - 1
-    pi_cache[x] = result
+    primes = [2,3]
+    if end <= 3 : return primes[:max(0,end-2)]
     
-    return int(result)
+    for n in range(5 >> 1, (int(sqrt(end))+1) >> 1):
+        if sieve[n]:
+            primes.append((n << 1) + 1)
+            for k in range(((n << 1) + 1)**2, end, 2*((n << 1) + 1)**2):
+                sieve[k >> 1] = False
 
-result = pi(10**8)
-print(result)
+    s  = int(sqrt(end)) + 1
+    if s%2 == 0: s += 1
+    primes.extend([ i for i in range(s, end, 2) if sieve[i >> 1]])
+    
+    return primes
+    
+def sieveOfErat(end):
+    if end < 2: return []
+
+    #The array doesn't need to include even numbers
+    lng = ((end/2)-1+end%2)
+    
+    # Create array and assume all numbers in array are prime
+    sieve = [True]*int(lng+1)
+
+    # In the following code, you're going to see some funky
+    # bit shifting and stuff, this is just transforming i and j
+    # so that they represent the proper elements in the array
+    
+    # Only go up to square root of the end
+    for i in range(int(sqrt(end)) >> 1):
+            
+        # Skip numbers that aren't marked as prime
+        if not sieve[i]: continue
+
+        # Unmark all multiples of i, starting at i**2
+        for j in range( (i*(i + 3) << 1) + 3, int(lng), (i << 1) + 3):
+            sieve[j] = False
+            
+    # Don't forget 2!
+    primes = [2]
+
+    # Gather all the primes into a list, leaving out the composite numbers
+    primes.extend([(i << 1) + 3 for i in range(int(lng)) if sieve[i]])
+
+    return primes
+
+
+for j in range(5,100000006, 1000000):
+        print(j)
+        
+        a = time.time()
+        sieveOfErat(j)
+        print(time.time()-a)
+        
+        a = time.time()
+        sieveOfAtkin(j)
+        print(time.time()-a)

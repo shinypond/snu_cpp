@@ -35,9 +35,9 @@ CD li(CD x, int n) {
 double second_li(CD x, int zero_idx) {
     // Calculate sum(li(x^rho))
     // The second term in the Riemann (1859) formula
-    CD zero1(0.5, zeros[zero_idx]);
-    CD zero2(0.5, -zeros[zero_idx]);
-    double result = (li(pow(x, zero1), 1) + li(pow(x, zero2), 1)).real();
+    CD zero(0.5, zeros[zero_idx]);
+    double result;
+    result = (double) 2 * li(pow(x, zero), 1).real();
     return result;
 }
 
@@ -49,6 +49,7 @@ double riemann_f(CD x) {
     // The second term is obtained from the sum of second_li(x, rho) 
     // The third and fourth terms are constants (and tiny).
     double result = li(x, 1).real();
+    cout << "LI(x) : " << result << endl;
     for (int i=0; i<zeros.size(); ++i) {
         result -= second_li(x, i);
     }
@@ -84,13 +85,15 @@ int mobius_mu(int n) {
             if (n % (i * i) == 0) {
                 return 0; // if n is not square-free
             }
-            num_p++;
+            if (n % i == 0) {
+                num_p++;
+            }
         }
     }
     if (num_p % 2 == 0) {
-        return 1; // if n has even prime factors
+        return -1; // if n has even prime factors
     }
-    return -1; // if n has odd prime factors
+    return 1; // if n has odd prime factors
 }
 
 int pi(int x) {

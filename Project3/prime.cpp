@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include <time.h>
 #include <cmath>
-#define N 4000000000LL
+#define N 1000000000LL
 #define NUM_THREADS 128
 
 using namespace std;

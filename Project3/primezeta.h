@@ -40,4 +40,4 @@ vector<double> zeros = {
 vector<CD> aux_last_term(CD x);
 CD li_last_term(CD x, int n);
 CD li(CD x, int n);
-CD second_li(CD x, int zero_idx);
+double second_li(CD x, int zero_idx);
